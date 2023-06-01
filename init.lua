@@ -35,7 +35,6 @@ I hope you enjoy your Neovim journey,
 
 P.S. You can delete this when you're done too. It's your config now :)
 --]]
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
@@ -75,7 +74,8 @@ require('lazy').setup({
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
-  { -- LSP Configuration & Plugins
+  {
+    -- LSP Configuration & Plugins
     'neovim/nvim-lspconfig',
     dependencies = {
       -- Automatically install LSPs to stdpath for neovim
@@ -84,21 +84,23 @@ require('lazy').setup({
 
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
-      { 'j-hui/fidget.nvim', opts = {} },
+      { 'j-hui/fidget.nvim',       opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
     },
   },
 
-  { -- Autocompletion
+  {
+    -- Autocompletion
     'hrsh7th/nvim-cmp',
     dependencies = { 'hrsh7th/cmp-nvim-lsp', 'L3MON4D3/LuaSnip', 'saadparwaiz1/cmp_luasnip' },
   },
 
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim', opts = {} },
-  { -- Adds git releated signs to the gutter, as well as utilities for managing changes
+  { 'folke/which-key.nvim',  opts = {} },
+  {
+    -- Adds git releated signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
     opts = {
       -- See `:help gitsigns.txt`
@@ -120,11 +122,15 @@ require('lazy').setup({
   --  end,
   --},
   -- Nord theme
-  {'shaunsingh/nord.nvim',config = function()
-   vim.cmd.colorscheme 'nord'
-  end,},
+  {
+    'arcticicestudio/nord-vim',
+    config = function()
+      vim.cmd.colorscheme 'nord'
+    end,
+  },
 
-  { -- Set lualine as statusline
+  {
+    -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
     -- See `:help lualine.txt`
     opts = {
@@ -137,7 +143,8 @@ require('lazy').setup({
     },
   },
 
-  { -- Add indentation guides even on blank lines
+  {
+    -- Add indentation guides even on blank lines
     'lukas-reineke/indent-blankline.nvim',
     -- Enable `lukas-reineke/indent-blankline.nvim`
     -- See `:help indent_blankline.txt`
@@ -151,12 +158,15 @@ require('lazy').setup({
   { 'numToStr/Comment.nvim', opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
-  { 'nvim-telescope/telescope.nvim', version = '*',
+  {
+    'nvim-telescope/telescope.nvim',
+    version = '*',
     dependencies = { 'nvim-lua/plenary.nvim' },
     config = function()
       require("telescope").load_extension("live_grep_args")
-  end,},
-  {'nvim-telescope/telescope-live-grep-args.nvim'},
+    end,
+  },
+  { 'nvim-telescope/telescope-live-grep-args.nvim' },
 
   -- Fuzzy Finder Algorithm which requires local dependencies to be built.
   -- Only load if `make` is available. Make sure you have the system
@@ -170,43 +180,45 @@ require('lazy').setup({
       return vim.fn.executable 'make' == 1
     end,
   },
-{'jpalardy/vim-slime'},
+  { 'jpalardy/vim-slime' },
 
-  { -- Highlight, edit, and navigate code
+  {
+    -- Highlight, edit, and navigate code
     'nvim-treesitter/nvim-treesitter',
     dependencies = {
       'nvim-treesitter/nvim-treesitter-textobjects',
     },
     build = ":TSUpdate",
   },
--- To find and replace
-  {'nvim-pack/nvim-spectre'},
+  -- To find and replace
+  { 'nvim-pack/nvim-spectre' },
   {
-  "nvim-tree/nvim-tree.lua",
-  version = "*",
-  dependencies = {
-    "nvim-tree/nvim-web-devicons",
+    "nvim-tree/nvim-tree.lua",
+    version = "*",
+    dependencies = {
+      "nvim-tree/nvim-web-devicons",
+    },
+    config = function()
+      require("nvim-tree").setup {}
+    end,
   },
-  config = function()
-    require("nvim-tree").setup {}
-  end,
-},
-{'neovim/nvim-lspconfig'},
-{ 'simrat39/rust-tools.nvim'},
----Debugging
-{ 'nvim-lua/plenary.nvim'},
-{ 'mfussenegger/nvim-dap'},
-{ 'lvimuser/lsp-inlayhints.nvim'},
+  { 'neovim/nvim-lspconfig' },
+  { 'simrat39/rust-tools.nvim' },
+  ---Debugging
+  { 'nvim-lua/plenary.nvim' },
+  { 'mfussenegger/nvim-dap' },
+  { 'lvimuser/lsp-inlayhints.nvim' },
 
   -- github copilot
 
-  {'zbirenbaum/copilot.lua',
+  {
+    'zbirenbaum/copilot.lua',
     config = function()
-      require("copilot").setup({panel = { keymap = {accept = "<CR>"}}})
+      require("copilot").setup({ panel = { keymap = { accept = "<CR>" } } })
     end,
   },
 
- -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
+  -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
   --       Uncomment any of the lines below to enable them.
   -- require 'kickstart.plugins.autoformat',
@@ -228,7 +240,7 @@ require('lazy').setup({
 vim.keymap.set("v", "<leader>p", '"_dP', { desc = 'Keep registers after replace word' })
 -- Config vim-
 vim.g._target = 'tmux'
-vim.g._default_config = {socket_name = 'default', target_pane= '{last}'}
+vim.g._default_config = { socket_name = 'default', target_pane = '{last}' }
 --remap
 vim.g._no_mappings = 1
 vim.keymap.set("n", "<leader><CR>", ":Send<CR><CR>", { noremap = true, silent = true })
@@ -239,7 +251,7 @@ vim.keymap.set("n", "<leader>sv", ':so ~/.config/nvim/init.lua', { noremap = tru
 
 -- Open nvim-spectre
 vim.keymap.set('n', '<leader>sw', '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', {
-    desc = "Search current word"
+  desc = "Search current word"
 })
 --vim.keymap.set('i', "<silent><script><expr> <C-J>", copilot#Accept("\<CR>"))
 
@@ -297,7 +309,7 @@ vim.keymap.set({ 'n', 'v' }, '<Space>', '<Nop>', { silent = true })
 vim.keymap.set('n', 'k', "v:count == 0 ? 'gk' : 'k'", { expr = true, silent = true })
 vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = true })
 
--- My keybinding 
+-- My keybinding
 vim.keymap.set("n", "<leader>qq", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader><Esc>", ":NvimTreeFocus<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>[", ":bnext<CR>", { noremap = true, silent = true })
@@ -338,8 +350,8 @@ pcall(require('telescope').load_extension, 'fzf')
 vim.keymap.set('n', '<leader>?', require('telescope.builtin').oldfiles, { desc = '[?] Find recently opened files' })
 vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
 require('telescope.builtin').buffers({ sort_lastused = true, ignore_current_buffer = true })
-vim.keymap.set('n', '<leader>[', ':bp<CR>',{ desc = 'Go to previous buffer'})
-vim.keymap.set('n', '<leader>]', ':bn<CR>',{ desc = 'Go to next buffer'})
+vim.keymap.set('n', '<leader>[', ':bp<CR>', { desc = 'Go to previous buffer' })
+vim.keymap.set('n', '<leader>]', ':bn<CR>', { desc = 'Go to next buffer' })
 
 -- move between buffer
 --vim.keymap.set('n', '<leader><space>', require('telescope.builtin').buffers, { desc = '[ ] Find existing buffers' })
@@ -485,8 +497,8 @@ end
 local servers = {
   -- clangd = {},
   -- gopls = {},
- pyright = {},
- rust_analyzer = {},
+  pyright = {},
+  rust_analyzer = {},
   -- tsserver = {},
 
   lua_ls = {
@@ -519,8 +531,8 @@ mason_lspconfig.setup_handlers {
       settings = servers[server_name],
     }
   end,
-   ["rust_analyzer"] = function()
-  require("rust-tools").setup {}
+  ["rust_analyzer"] = function()
+    require("rust-tools").setup {}
   end
 }
 
