@@ -40,6 +40,7 @@ P.S. You can delete this when you're done too. It's your config now :)
 --  NOTE: Must happen before plugins are required (otherwise wrong leader will be used)
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
+vim.opt.termguicolors = true
 
 -- Install package manager
 --    https://github.com/folke/lazy.nvim
@@ -207,16 +208,94 @@ require('lazy').setup({
   ---Debugging
   { 'nvim-lua/plenary.nvim' },
   { 'mfussenegger/nvim-dap' },
-  { 'lvimuser/lsp-inlayhints.nvim' },
+  {
+    'lvimuser/lsp-inlayhints.nvim' },
 
   -- github copilot
 
   {
     'zbirenbaum/copilot.lua',
     config = function()
-      require("copilot").setup({ panel = { keymap = { accept = "<CR>" } } })
+      require("copilot").setup({ suggestion = { keymap = { accept = false } } })
     end,
   },
+  -- markdown preview
+  {
+    'iamcco/markdown-preview.nvim',
+    config = function()
+      vim.fn["mkdp#util#install"]()
+    end,
+  },
+
+  -- Showing outline
+  {
+    'simrat39/symbols-outline.nvim',
+    config = function()
+      require("symbols-outline").setup({ opts = { auto_close = true, position = 'left' } })
+    end,
+  },
+  -- Highlight hex color
+  {
+    'norcalli/nvim-colorizer.lua',
+    config = function()
+      require("colorizer").setup({})
+    end,
+  },
+
+  --
+  {
+    'nvim-treesitter/nvim-treesitter-context',
+    config = function()
+      require('treesitter-context').setup({})
+    end
+  },
+  {
+    'scalameta/nvim-metals',
+    dependencies = { "nvim-lua/plenary.nvim" },
+    config = function()
+      require('metals').bare_config()
+    end
+  },
+  -- quarto highlight
+  --{'quarto-dev/quarto-nvim'},
+  --{'jmbuhr/otter.nvim'},
+  --
+  -- {
+  --   'quarto-dev/quarto-nvim',
+  --   version = '0.7.3',
+  --   dependencies = {
+  --     { 'hrsh7th/nvim-cmp' },
+  --     {
+  --       'jmbuhr/otter.nvim',
+  --       version = '0.8.1',
+  --       config = function()
+  --         require'otter.config'.setup({})
+  --       end,
+  --     },
+  --   },
+  --   config = function()
+  --     require 'quarto'.setup {
+  --       debug = false,
+  --       closePreviewOnExit = true,
+  --       lspFeatures = {
+  --         enabled = true,
+  --         languages = { 'r', 'python', 'julia', 'bash', 'lua' },
+  --         chunks = 'curly', -- 'curly' or 'all'
+  --         diagnostics = {
+  --           enabled = true,
+  --           triggers = { "BufWritePost" }
+  --         },
+  --         completion = {
+  --           enabled = true,
+  --         },
+  --       },
+  --       keymap = {
+  --         hover = 'K',
+  --         definition = 'gd'
+  --       },
+  --     }
+  --   end
+  -- },
 
   -- NOTE: Next Step on Your Neovim Journey: Add/Configure additional "plugins" for kickstart
   --       These are some example plugins that I've included in the kickstart repository.
@@ -235,25 +314,63 @@ require('lazy').setup({
   { import = 'custom.plugins' },
 }, {})
 
+-- Scala LSP config
+--
+
+
 -- My added configuration
 --
+
 vim.keymap.set("v", "<leader>p", '"_dP', { desc = 'Keep registers after replace word' })
 -- Config vim-
-vim.g._target = 'tmux'
-vim.g._default_config = { socket_name = 'default', target_pane = '{last}' }
+vim.g.slime_target = 'tmux'
+vim.g.slime_default_config = { socket_name = 'default', target_pane = '{last}' }
+vim.g.slime_bracketed_paste = 1
 --remap
-vim.g._no_mappings = 1
-vim.keymap.set("n", "<leader><CR>", ":Send<CR><CR>", { noremap = true, silent = true })
-vim.keymap.set("v", "<leader><CR>", 'y:Send1 <C-R>"<CR>]', { noremap = true, silent = true })
+vim.g.no_mappings = 1
+vim.keymap.set("n", "<leader><CR>", ":SlimeSend<CR><CR>", { noremap = true, silent = true })
+vim.keymap.set("v", "<leader><CR>", 'y:SlimeSend1 <C-R>"<CR><CR>', { noremap = true, silent = true })
 -- restart ipython kernel
-vim.keymap.set("n", "<leader>rp", ':Send1 exit <CR>:SlimeSend1 ipython<CR>', { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>rp", ':SlimeSend1 exit <CR>:SlimeSend1 ipython<CR>', { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>sv", ':so ~/.config/nvim/init.lua', { noremap = true, silent = true })
 
 -- Open nvim-spectre
 vim.keymap.set('n', '<leader>sw', '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', {
   desc = "Search current word"
 })
+vim.keymap.set("n", "<leader>sc", ":ColorizerToggle<CR>", { noremap = true, silent = true })
+-- scroll nvim-cmp
+--vim.keymap.set("i", "<C-j>", require('cmp').scroll_docs(), { expr = true })
+
 --vim.keymap.set('i', "<silent><script><expr> <C-J>", copilot#Accept("\<CR>"))
+--
+--use <Tab> to accept copilot when there are suggestion
+vim.keymap.set('i', '<Tab>', function()
+  if require("copilot.suggestion").is_visible() then
+    require("copilot.suggestion").accept()
+  else
+    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
+  end
+end, { desc = "Super Tab" })
+
+-- Copilot auto cmd
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = '*',
+  callback = function()
+    vim.cmd("Copilot suggestion")
+    print("Copilot ready")
+  end,
+})
+
+
+-- Fortmat on save
+vim.api.nvim_create_autocmd('BufWritePre', {
+  pattern = '*',
+  callback = function()
+    vim.lsp.buf.format()
+    print("Formated!")
+  end,
+})
 
 
 --
@@ -262,7 +379,7 @@ vim.keymap.set('n', '<leader>sw', '<cmd>lua require("spectre").open_visual({sele
 -- See `:help vim.o`
 
 -- Set highlight on search
-vim.o.hlsearch = false
+vim.o.hlsearch = true
 
 -- Make line numbers default
 vim.wo.number = true
@@ -312,8 +429,8 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- My keybinding
 vim.keymap.set("n", "<leader>qq", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader><Esc>", ":NvimTreeFocus<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>[", ":bnext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>]", ":bprevious<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>l", ":bnext<CR>", { noremap = true, silent = true })
+vim.keymap.set("n", "<leader>h", ":bprevious<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>fs', require("telescope").extensions.live_grep_args.live_grep_args, { noremap = true })
 
@@ -551,22 +668,13 @@ cmp.setup {
   mapping = cmp.mapping.preset.insert {
     ['<C-n>'] = cmp.mapping.select_next_item(),
     ['<C-p>'] = cmp.mapping.select_prev_item(),
-    ['<C-d>'] = cmp.mapping.scroll_docs(-4),
-    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+    ['<C-k>'] = cmp.mapping.scroll_docs(-4),
+    ['<C-j>'] = cmp.mapping.scroll_docs(4),
     ['<C-Space>'] = cmp.mapping.complete {},
     ['<CR>'] = cmp.mapping.confirm {
       behavior = cmp.ConfirmBehavior.Replace,
       select = true,
     },
-    ['<Tab>'] = cmp.mapping(function(fallback)
-      if cmp.visible() then
-        cmp.select_next_item()
-      elseif luasnip.expand_or_jumpable() then
-        luasnip.expand_or_jump()
-      else
-        fallback()
-      end
-    end, { 'i', 's' }),
     ['<S-Tab>'] = cmp.mapping(function(fallback)
       if cmp.visible() then
         cmp.select_prev_item()
@@ -585,3 +693,64 @@ cmp.setup {
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
+--
+--
+--
+-- =========== LSP for scala ================
+local metals_config = require("metals").bare_config()
+
+-- Example of settings
+metals_config.settings = {
+  showImplicitArguments = true,
+  excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
+}
+-- *READ THIS*
+-- I *highly* recommend setting statusBarProvider to true, however if you do,
+-- you *have* to have a setting to display this in your statusline or else
+-- you'll not see any messages from metals. There is more info in the help
+-- docs about this
+-- metals_config.init_options.statusBarProvider = "on"
+
+-- Example if you are using cmp how to make sure the correct capabilities for snippets are set
+local capabilities = vim.lsp.protocol.make_client_capabilities()
+metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
+
+-- Debug settings if you're using nvim-dap
+local dap = require("dap")
+
+dap.configurations.scala = {
+  {
+    type = "scala",
+    request = "launch",
+    name = "RunOrTest",
+    metals = {
+      runType = "runOrTestFile",
+      --args = { "firstArg", "secondArg", "thirdArg" }, -- here just as an example
+    },
+  },
+  {
+    type = "scala",
+    request = "launch",
+    name = "Test Target",
+    metals = {
+      runType = "testTarget",
+    },
+  },
+}
+
+metals_config.on_attach = function(client, bufnr)
+  require("metals").setup_dap()
+end
+
+-- Autocmd that will actually be in charging of starting the whole thing
+local nvim_metals_group = vim.api.nvim_create_augroup("nvim-metals", { clear = true })
+vim.api.nvim_create_autocmd("FileType", {
+  -- NOTE: You may or may not want java included here. You will need it if you
+  -- want basic Java support but it may also conflict if you are using
+  -- something like nvim-jdtls which also works on a java filetype autocmd.
+  pattern = { "scala", "sbt", "java" },
+  callback = function()
+    require("metals").initialize_or_attach(metals_config)
+  end,
+  group = nvim_metals_group,
+})
