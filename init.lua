@@ -72,6 +72,19 @@ require('lazy').setup({
 
   -- Detect tabstop and shiftwidth automatically
   'tpope/vim-sleuth',
+  {
+    'mrcjkb/rustaceanvim',
+    version = '^5', -- Recommended
+    lazy = false,   -- This plugin is already lazy
+  },
+
+  -- Show inlay hints at the' end
+  {
+    "chrisgrieser/nvim-lsp-endhints",
+    event = "LspAttach",
+    opts = {}, -- required, even if empty
+  },
+  --{ "chrisgrieser/nvim-lsp-endhints", event = "LspAttach", opts = {}, -- required, even if empty },
 
   -- NOTE: This is where your plugins related to LSP can be installed.
   --  The configuration is done below. Search for lspconfig to find it below.
@@ -86,10 +99,18 @@ require('lazy').setup({
       -- Useful status updates for LSP
       -- NOTE: `opts = {}` is the same as calling `require('fidget').setup({})`
       { 'j-hui/fidget.nvim',       opts = {} },
+      { 'andymass/vim-matchup',    opts = {} },
 
       -- Additional lua configuration, makes nvim stuff amazing!
       'folke/neodev.nvim',
     },
+  },
+  {
+    "L3MON4D3/LuaSnip",
+    -- follow latest release.
+    version = "v2.*", -- Replace <CurrentMajor> by the latest released major (first number of latest release)
+    -- install jsregexp (optional!).
+    build = "make install_jsregexp"
   },
 
   {
@@ -97,9 +118,7 @@ require('lazy').setup({
     'hrsh7th/nvim-cmp',
     dependencies = { 'hrsh7th/cmp-nvim-lsp', 'L3MON4D3/LuaSnip', 'saadparwaiz1/cmp_luasnip' },
   },
-
   -- Useful plugin to show you pending keybinds.
-  { 'folke/which-key.nvim',  opts = {} },
   {
     -- Adds git releated signs to the gutter, as well as utilities for managing changes
     'lewis6991/gitsigns.nvim',
@@ -115,7 +134,8 @@ require('lazy').setup({
     },
   },
 
-  -- { -- Theme inspired by Atom
+  --{
+  -- Theme inspired by Atom
   --  'navarasu/onedark.nvim',
   --  priority = 1000,
   --  config = function()
@@ -123,13 +143,13 @@ require('lazy').setup({
   --  end,
   --},
   -- Nord theme
-  {
-    'arcticicestudio/nord-vim',
-    config = function()
-      vim.cmd.colorscheme 'nord'
-    end,
-  },
-
+  --{
+  --  'arcticicestudio/nord-vim',
+  --  config = function()
+  --    vim.cmd.colorscheme 'nord'
+  --  end,
+  --},
+  { "EdenEast/nightfox.nvim" },
   {
     -- Set lualine as statusline
     'nvim-lualine/lualine.nvim',
@@ -144,19 +164,10 @@ require('lazy').setup({
     },
   },
 
-  {
-    -- Add indentation guides even on blank lines
-    'lukas-reineke/indent-blankline.nvim',
-    -- Enable `lukas-reineke/indent-blankline.nvim`
-    -- See `:help indent_blankline.txt`
-    opts = {
-      char = '┊',
-      show_trailing_blankline_indent = false,
-    },
-  },
+  { 'lukas-reineke/indent-blankline.nvim', },
 
   -- "gc" to comment visual regions/lines
-  { 'numToStr/Comment.nvim', opts = {} },
+  { 'numToStr/Comment.nvim',               opts = {} },
 
   -- Fuzzy Finder (files, lsp, etc)
   {
@@ -208,16 +219,39 @@ require('lazy').setup({
   ---Debugging
   { 'nvim-lua/plenary.nvim' },
   { 'mfussenegger/nvim-dap' },
-  {
-    'lvimuser/lsp-inlayhints.nvim' },
+  --{ 'lvimuser/lsp-inlayhints.nvim' },
 
-  -- github copilot
-
+  -- docstring
   {
-    'zbirenbaum/copilot.lua',
+    "danymat/neogen",
+    dependencies = "nvim-treesitter/nvim-treesitter",
     config = function()
-      require("copilot").setup({ suggestion = { keymap = { accept = false } } })
+      require('neogen').setup {
+        enabled = true,
+        languages = {
+          python = {
+            template = { annotation_convention = "numpydoc" } }
+        }
+      }
     end,
+    -- Uncomment next line if you want to follow only stable versions
+    -- version = "*"
+  },
+  --- LLM Integration
+  {
+    "frankroeder/parrot.nvim",
+    dependencies = { "ibhagwan/fzf-lua", "nvim-lua/plenary.nvim" },
+    opts = {},
+    config = function()
+      require("parrot").setup {
+        -- Providers must be explicitly added to make them available.
+        providers = {
+          anthropic = {
+            api_key = os.getenv "ANTHROPIC_API_KEY",
+          }
+        },
+      }
+    end
   },
   -- markdown preview
   {
@@ -256,6 +290,21 @@ require('lazy').setup({
       require('metals').bare_config()
     end
   },
+
+  {
+    'ThePrimeagen/harpoon',
+    config = function()
+      require("harpoon").setup({})
+    end
+  },
+
+  {
+    'ggandor/leap.nvim',
+    config = function()
+      require('leap').add_default_mappings()
+    end
+  },
+  { 'nvim-treesitter/playground' },
   -- quarto highlight
   --{'quarto-dev/quarto-nvim'},
   --{'jmbuhr/otter.nvim'},
@@ -329,10 +378,12 @@ vim.g.slime_bracketed_paste = 1
 --remap
 vim.g.no_mappings = 1
 vim.keymap.set("n", "<leader><CR>", ":SlimeSend<CR><CR>", { noremap = true, silent = true })
-vim.keymap.set("v", "<leader><CR>", 'y:SlimeSend1 <C-R>"<CR><CR>', { noremap = true, silent = true })
+vim.keymap.set("v", "<leader><CR>", 'y:SlimeSend1 <C-R>"<CR>}', { noremap = true, silent = true })
 -- restart ipython kernel
-vim.keymap.set("n", "<leader>rp", ':SlimeSend1 exit <CR>:SlimeSend1 ipython<CR>', { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>sv", ':so ~/.config/nvim/init.lua', { noremap = true, silent = true })
+--
+vim.keymap.set("n", "<leader>rp", ':SlimeSend1 exit() <CR>:SlimeSend1 ipython<CR>', { noremap = true, silent = true })
+-- vim.keymap.set("n", "<leader>sv", ':so ~/.config/nvim/init.lua<CR>', { noremap = true, silent = true }) : lazy not suport reload init.lua
+
 
 -- Open nvim-spectre
 vim.keymap.set('n', '<leader>sw', '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', {
@@ -342,37 +393,30 @@ vim.keymap.set("n", "<leader>sc", ":ColorizerToggle<CR>", { noremap = true, sile
 -- scroll nvim-cmp
 --vim.keymap.set("i", "<C-j>", require('cmp').scroll_docs(), { expr = true })
 
---vim.keymap.set('i', "<silent><script><expr> <C-J>", copilot#Accept("\<CR>"))
 --
---use <Tab> to accept copilot when there are suggestion
-vim.keymap.set('i', '<Tab>', function()
-  if require("copilot.suggestion").is_visible() then
-    require("copilot.suggestion").accept()
-  else
-    vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes("<Tab>", true, false, true), "n", false)
-  end
-end, { desc = "Super Tab" })
-
--- Copilot auto cmd
-vim.api.nvim_create_autocmd('FileType', {
-  pattern = '*',
-  callback = function()
-    vim.cmd("Copilot suggestion")
-    print("Copilot ready")
-  end,
-})
 
 
 -- Fortmat on save
-vim.api.nvim_create_autocmd('BufWritePre', {
-  pattern = '*',
-  callback = function()
-    vim.lsp.buf.format()
-    print("Formated!")
-  end,
-})
+--vim.api.nvim_create_autocmd('BufWritePre', {
+--  pattern = { '*.py', '*.jl', '*.R', '*.lua', '*.rs', '*.scala' },
+--  callback = function()
+--    vim.lsp.buf.format()
+--  end,
+--})
+
+-- Harpoon config
+--
+vim.keymap.set('n', '<leader>af', '<cmd>lua require("harpoon.mark").add_file() <CR>')
+vim.keymap.set('n', '<leader>hp', '<cmd>lua require("harpoon.ui").toggle_quick_menu()<CR>')
+vim.keymap.set('n', '<leader>l', '<cmd>lua require("harpoon.ui").nav_next()<CR>')
+vim.keymap.set('n', '<leader>h', '<cmd>lua require("harpoon.ui").nav_prev()<CR>')
 
 
+-- Move between nvim window
+vim.keymap.set('n', '<c-l>', ':wincmd l<CR>')
+vim.keymap.set('n', '<c-k>', ':wincmd k<CR>')
+vim.keymap.set('n', '<c-j>', ':wincmd j<CR>')
+vim.keymap.set('n', '<c-h>', ':wincmd h<CR>')
 --
 
 -- [[ Setting options ]]
@@ -429,8 +473,8 @@ vim.keymap.set('n', 'j', "v:count == 0 ? 'gj' : 'j'", { expr = true, silent = tr
 -- My keybinding
 vim.keymap.set("n", "<leader>qq", ":NvimTreeToggle<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader><Esc>", ":NvimTreeFocus<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>l", ":bnext<CR>", { noremap = true, silent = true })
-vim.keymap.set("n", "<leader>h", ":bprevious<CR>", { noremap = true, silent = true })
+--vim.keymap.set("n", "<leader>l", ":bnext<CR>", { noremap = true, silent = true })
+--vim.keymap.set("n", "<leader>h", ":bprevious<CR>", { noremap = true, silent = true })
 vim.keymap.set("n", "<leader>bd", ":bdelete<CR>", { noremap = true, silent = true })
 vim.keymap.set('n', '<leader>fs', require("telescope").extensions.live_grep_args.live_grep_args, { noremap = true })
 
@@ -493,7 +537,7 @@ vim.keymap.set('n', '<leader>sd', require('telescope.builtin').diagnostics, { de
 -- See `:help nvim-treesitter`
 require('nvim-treesitter.configs').setup {
   -- Add languages to be installed here that you want installed for treesitter
-  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim' },
+  ensure_installed = { 'c', 'cpp', 'go', 'lua', 'python', 'rust', 'tsx', 'typescript', 'vimdoc', 'vim', 'sql' },
 
   -- Autoinstall languages that are not installed. Defaults to false (but you can change for yourself!)
   auto_install = false,
@@ -578,10 +622,26 @@ local on_attach = function(_, bufnr)
     vim.keymap.set('n', keys, func, { buffer = bufnr, desc = desc })
   end
 
+  local split_definition_vertical = function()
+    vim.lsp.buf_request(0, "textDocument/definition", vim.lsp.util.make_position_params(),
+      function(err, result, ctx, config)
+        if err then
+          print(err)
+          return
+        end
+
+        local command = 'spli ' .. vim.uri_to_fname(result[1].uri)
+        local line = "call cursor(" ..
+            (result[1].range.start.line + 1) .. "," .. (result[1].range.start.character + 1) .. ")"
+        vim.cmd(command)
+        vim.cmd(line)
+      end)
+  end
+
   nmap('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
   nmap('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction')
-
   nmap('gd', vim.lsp.buf.definition, '[G]oto [D]efinition')
+  nmap('gp', split_definition_vertical, '[G]oto [D]efinition')
   nmap('gr', require('telescope.builtin').lsp_references, '[G]oto [R]eferences')
   nmap('gI', vim.lsp.buf.implementation, '[G]oto [I]mplementation')
   nmap('<leader>D', vim.lsp.buf.type_definition, 'Type [D]efinition')
@@ -590,7 +650,7 @@ local on_attach = function(_, bufnr)
 
   -- See `:help K` for why this keymap
   nmap('K', vim.lsp.buf.hover, 'Hover Documentation')
-  nmap('<C-k>', vim.lsp.buf.signature_help, 'Signature Documentation')
+  nmap('<leader>k', vim.lsp.buf.signature_help, 'Signature Documentation')
 
   -- Lesser used LSP functionality
   nmap('gD', vim.lsp.buf.declaration, '[G]oto [D]eclaration')
@@ -611,11 +671,30 @@ end
 --
 --  Add any additional override configuration in the following tables. They will be passed to
 --  the `settings` field of the server config. You must look up that documentation yourself.
+
+-- native inlay
+--vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled())
+-- default settings
+require("lsp-endhints").setup {
+  icons = {
+    type = "󰜁 ",
+    parameter = "󰏪 ",
+    offspec = " ", -- hint kind not defined in official LSP spec
+    unknown = " ", -- hint kind is nil
+  },
+  label = {
+    padding = 1,
+    marginLeft = 0,
+    bracketedParameters = true,
+  },
+  autoEnableHints = true,
+}
+
 local servers = {
   -- clangd = {},
   -- gopls = {},
-  pyright = {},
-  rust_analyzer = {},
+  -- pyright = {},
+  -- rust_analyzer = {},
   -- tsserver = {},
 
   lua_ls = {
@@ -648,9 +727,53 @@ mason_lspconfig.setup_handlers {
       settings = servers[server_name],
     }
   end,
-  ["rust_analyzer"] = function()
-    require("rust-tools").setup {}
-  end
+  ["sqlls"] = function()
+    require("lspconfig").sqlls.setup {
+      cmd = { "sql-language-server", "up", "--method", "stdio" },
+      filetypes = { "sql" },
+      on_attach = on_attach,
+      root_dir = require("lspconfig").util.root_pattern(".git", vim.fn.getcwd()),
+    }
+  end,
+  --["rust_analyzer"] = function() require("rust-tools").setup {} end,
+  ["pylsp"] = function()
+    require("lspconfig").pylsp.setup {
+      settings = {
+        pylsp = {
+          plugins = {
+            pycodestyle = {
+              ignore = { 'W391',
+                'W503' },
+              maxLineLength = 250
+            }
+          }
+        }
+      }
+    }
+  end,
+}
+
+
+vim.g.rustaceanvim = {
+  ---@type rustaceanvim.tools.Opts
+  tools = {
+    -- ...
+  },
+  ---@type rustaceanvim.lsp.ClientOpts
+  server = {
+    on_attach = on_attach,
+    -- Set keybindings, etc. here. end,
+    default_settings = {
+      -- rust-analyzer language server configuration
+      ['rust-analyzer'] = {
+      },
+    },
+    -- ...
+  },
+  ---@type rustaceanvim.dap.Opts
+  dap = {
+    -- ...
+  },
 }
 
 -- nvim-cmp setup
@@ -701,8 +824,15 @@ local metals_config = require("metals").bare_config()
 
 -- Example of settings
 metals_config.settings = {
-  showImplicitArguments = true,
+  --showImplicitArguments = true,
   excludedPackages = { "akka.actor.typed.javadsl", "com.github.swagger.akka.javadsl" },
+  inlayHints = {
+    hintsInPatternMatch = { enable = true },
+    implicitArguments = { enable = true },
+    implicitConversions = { enable = true },
+    inferredTypes = { enable = true },
+    typeParameters = { enable = true },
+  }
 }
 -- *READ THIS*
 -- I *highly* recommend setting statusBarProvider to true, however if you do,
@@ -712,7 +842,7 @@ metals_config.settings = {
 -- metals_config.init_options.statusBarProvider = "on"
 
 -- Example if you are using cmp how to make sure the correct capabilities for snippets are set
-local capabilities = vim.lsp.protocol.make_client_capabilities()
+--local capabilities = vim.lsp.protocol.make_client_capabilities()
 metals_config.capabilities = require("cmp_nvim_lsp").default_capabilities(capabilities)
 
 -- Debug settings if you're using nvim-dap
@@ -740,6 +870,7 @@ dap.configurations.scala = {
 
 metals_config.on_attach = function(client, bufnr)
   require("metals").setup_dap()
+  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, { desc = "Goto Definition" })
 end
 
 -- Autocmd that will actually be in charging of starting the whole thing
@@ -754,3 +885,8 @@ vim.api.nvim_create_autocmd("FileType", {
   end,
   group = nvim_metals_group,
 })
+
+-- Remove virtual text
+vim.diagnostic.config({ virtual_text = false })
+
+vim.cmd("colorscheme nordfox")
